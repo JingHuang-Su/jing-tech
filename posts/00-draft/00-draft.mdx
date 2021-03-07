@@ -1,0 +1,80 @@
+---
+title: Draft
+slug: draft
+author: JingHuang-Su
+---
+
+# Header
+
+# H1 Hello World 哈囉世界
+
+## H2 Hello World 哈囉世界
+
+### H3 Hello World 哈囉世界
+
+#### H4 Hello World 哈囉世界
+
+##### H5 Hello World 哈囉世界
+
+###### H6 Hello World 哈囉世界
+
+# Paragraph
+
+這是一段句子`console.log("這是一段句子")`這是一段句子這是一段句子這是一段句子這是一段句子這是一段句子這是一段句子這是一段句子這是一段句子 [link](http://jing-tech.me) This is a paragraph This is a paragraph This is a paragraph This is a paragraph This is a paragraph This is a paragraph
+
+# Strong / Emphasis / Delete
+
+**strong 重點 keypoint**
+
+_em 強調 emphasis_
+
+~~DELETED~~
+
+> Blockquote
+> Blockquote
+> Blockquote
+
+# UL / OL
+
+1. 這是第一點
+2. 這是第二點
+3. 這是第三點
+4. 很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長很長的第四點
+
+- List 1
+- List 2
+- List 3
+- List 4
+  1. Sub List 5
+
+# Line Break
+
+---
+
+```jsx
+<Highlight
+  {...defaultProps}
+  code={props.children.props.children}
+  theme={vsDark}
+  language={
+    matches && matches.groups && matches.groups.lang ? matches.groups.lang : ''
+  }
+>
+  {({ className, style, tokens, getLineProps, getTokenProps }) => (
+    <Pre className={className} style={style}>
+      {tokens.map((line, i) => (
+        <Line key={i} {...getLineProps({ line, key: i })}>
+          <LineNo>{i + 1}</LineNo>
+          <LineContent>
+            {line.map((token, key) => (
+              <span key={key} {...getTokenProps({ token, key })} />
+            ))}
+          </LineContent>
+        </Line>
+      ))}
+    </Pre>
+  )}
+</Highlight>
+```
+
+[連結 link](http://jing-tech.me)

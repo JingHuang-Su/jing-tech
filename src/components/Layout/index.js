@@ -1,7 +1,9 @@
 import React from 'react';
+import { MDXProvider } from '@mdx-js/react';
 import Helmet from 'react-helmet';
-import Header from '../Header';
+import NavBar from '../NavBar';
 import useSiteInfo from '../../hooks/useSiteInfo';
+import { Wrapper, MDXComponent } from './style';
 
 const Layout = ({ children }) => {
   const { title, description } = useSiteInfo();
@@ -13,8 +15,10 @@ const Layout = ({ children }) => {
         <title>{title}</title>
         <meta name="description" content={description} />
       </Helmet>
-      <Header />
-      {children}
+      <NavBar />
+      <MDXProvider components={MDXComponent}>
+        <Wrapper>{children}</Wrapper>
+      </MDXProvider>
     </>
   );
 };

@@ -1,4 +1,5 @@
-/* ./src/styles/global.css */
-@tailwind base;
+/* ./src/styles/global.css ;
 @tailwind components;
-@tailwind utilities;
+@tailwind utilities; */
+
+@tailwind base;
