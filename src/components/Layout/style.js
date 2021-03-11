@@ -1,5 +1,6 @@
 import styled from 'styled-components';
 import CodeBlock from '../CodeBlock';
+import quote from '../../../assets/images/quote.svg';
 
 const typography = {
   h1: '36px',
@@ -76,7 +77,7 @@ const Blockquote = styled('blockquote')`
   padding-left: 50px;
 
   :before {
-    content: '\f10d';
+    content: url(${quote});
     color: #ccc;
     font-size: 32px;
     font-family: 'Font Awesome 5 Free';
@@ -89,6 +90,10 @@ const Blockquote = styled('blockquote')`
 
   p {
     margin-bottom: 0.75em;
+  }
+
+  * {
+    font-style: italic !important;
   }
 `;
 
@@ -171,6 +176,9 @@ const Em = styled('em')`
   font-style: italic;
 `;
 
+const Pre = styled('pre')`
+  margin-bottom: 20px;
+`;
 const MDXComponent = {
   h1: Head('h1'),
   h2: Head('h2'),
@@ -187,7 +195,8 @@ const MDXComponent = {
   hr: Hr,
   ul: UL,
   del: Delete,
-  pre: CodeBlock,
+  pre: Pre,
+  // pre: CodeBlock,
 };
 
 export { Wrapper, MDXComponent };

@@ -1,0 +1,285 @@
+---
+title: Introduciton to Gatsby
+slug: gatsby_tutorial
+author: JingHuang-Su
+tag: #gatsby #frontend
+---
+
+## Setup
+
+我們從 0 開始建置 Gatsby 環境*(這裡其實可以用 Gatsby CLI，如果是用 CLI 的可以跳過此一部分)*
+
+1. Create Folder
+
+```bash
+// 創建 folder
+mkdir my-gatsby
+
+// initialize
+git init
+npm init
+```
+
+2. Install `react`, `gatsby`, `react-dom`
+
+```bash
+yarn add gatsby react react-dom
+yarn add -D cross-env
+```
+
+3. 目前的 File Structure
+
+```bash{5}
+...
+/node_modules
+/src
+/pages
+    index.js <- create this one
+/static
+    favicon.ico <- create this one(get your fav icon)
+...
+```
+
+4. 編輯 `./pages/index.js`
+
+```jsx
+import React from 'react';
+
+const App = () => <div>Hello world</div>;
+
+export default App;
+```
+
+5. 設定 `package.json`
+
+```JSON
+// package.json
+{
+    // ...
+    "scripts": {
+        "build": "gatsby build",
+        "develop": "cross-env GATSBY_GRAPHQL_IDE=playground gatsby develop",
+        "format": "prettier --write src/**/*.{js,jsx}",
+        "start": "npm run develop",
+        "serve": "gatsby serve",
+        "test": "echo \"Write tests! -> https://gatsby.dev/unit-testing\""
+    },
+    // ...
+}
+```
+
+6. 開啟專案
+
+```
+yarn start
+```
+
+此時就可以看到 Hello world 在網頁上了!
+
+> Quick Note
+>
+> 1. Gatsby file system 有 default 的 routing 設置， 只要在 `./src/pages` 底下的 `xxx.js` 檔案都會被視為 **page component**，並會在 `{yourdomain}/xxx` 呈現。
+
+## 使用 Gatsby Query 並優化 SEO
+
+網頁的 TDK _(title, description and keyword)_ 可以幫助我們優化 SEO，而此次我們就是要用 title 以及 description，幫助我們優化 SEO。
+
+React-Helmet 則可以幫助我們在頁面新增 title 以及 description 的 Meta Tag.
+
+```shell
+yarn add gatsby-plugin-react-helmet react-helmet
+```
+
+接下來在根目錄創建 `gatsby-config.js`
+
+```js{4,5,7}
+// gatsby-config.js
+module.exports = {
+  siteMetadata: {
+    title: "Jing's Blog",
+    description: 'A Blog by JingHuang-Su',
+  },
+  plugins: ['gatsby-plugin-react-helmet'],
+};
+```
+
+現在已經創建好 `gatsby-config.js` 了，那要如何用 graphql 去取得 siteMetadata 的資訊呢?
+
+我們可以進入到 `localhost:8000/__graphql`，此為 gatsby 提供的 graphql playground
+
+接下來在 IDE 輸入，graphql 就會根據 query 取得相對應的資訊，回傳 object. _(如果不知道資料在哪個位置，可以透過介面提供的 **DOCS** 標籤，去尋找相對應的資料)_
+
+```js
+query {
+  site {
+    siteMetadata {
+      title
+      description
+    }
+  }
+}
+
+// result
+{
+  "data": {
+    "site": {
+      "siteMetadata": {
+        "title": "Jing's Blog",
+        "description": "A Blog by JingHuang-Su"
+      }
+    }
+  },
+  "extensions": {}
+}
+```
+
+知道如何用 graphql 取得資料後，接下來創建 `useSiteInfo.js`， 主要是取得所有在 `gatsby-config.js` siteMetadata 的資訊。
+
+```js
+import { grahql, useStaticQuery } from 'gatsby';
+
+const useSiteInfo = () => {
+  const siteInfo = useStaticQuery(graphql`
+    query {
+      site {
+        siteMetadata {
+          title
+          description
+        }
+      }
+    }
+  `);
+
+  return data.site.siteMetadata;
+};
+
+export default useSiteInfo;
+```
+
+再來建立 `SEO.js`， 從 `useSiteInfo` 取得 `title` 與 `description`，並用 React-Helmet 去進行 meta tag 的設定。
+
+```js
+import React from 'react';
+import Helmet from 'react-helmet';
+import useSiteInfo from '../../hooks/useSiteInfo';
+
+const SEO = ({ children }) => {
+  const { title, description } = useSiteInfo();
+
+  return (
+    <Helmet>
+      <html lang="zh" />
+      <title>{title}</title>
+      <meta name="description" content={description} />
+    </Helmet>
+  );
+};
+
+export default SEO;
+```
+
+> Quick Note
+>
+> 1. `useStaticQuery` 不同於 page query (之後面會介紹到 ) 是它可以用在任一地方。
+
+```
+
+```
+
+## MDX
+
+再來就開始本篇的重頭戲，導入 MDX， MDX 是一個可以讓使用者在 Markdown 引入 React 元件的庫，簡單來說就是 JSX + Markdown。
+
+接下來就快速地用 MDX 製作一個簡單的頁面，
+
+```shell
+yarn add gatsby-plugin-mdx @mdx-js/mdx @mdx-js/react
+```
+
+再來將 `gatsby-plugin-mdx` 加入到 `gatsby-config.js` 的 plugins 中
+
+```js{7-14}
+module.exports = {
+  siteMetadata: {
+    /** ... */
+  },
+  plugins: [
+    /** ... */
+    {
+      resolve: 'gatsby-plugin-mdx',
+      options: {
+        defaultLayouts: {
+          default: require.resolve('./src/components/layout.js'), // 會根據此一設定，default 設置 mdx 會引入到哪。
+        },
+      },
+    },
+  ],
+};
+```
+
+在 `pages` 底下創建一個 `contact.mdx`，既然是有聯絡資訊，那勢必會有一個 Component 專門處理各種聯絡連結。
+
+而 `IconLink` 這個 Component 就會幫我處理這件事情。
+
+**MDX 強大的地方就是可以在裡面引入 React Component，並且結合 Markdown 寫法**
+
+所以我在 `contact.mdx` 引入 `IconLink`，並且加上一些 Markdown 的語法，這樣就是個 MDX 的頁面了!!
+
+```js
+import { FaMedium, FaLinkedinIn, FaTwitter, FaTelegram } from 'react-icons/fa';
+import IconLink from '../components/IconLink';
+
+# Contact Me
+
+## 可以透過以下方式聯絡我喔！
+
+<div style={{ display: 'flex', marginTop:10 }}>
+
+<IconLink
+  icon={<FaTwitter />}
+  text="Twitter"
+  link="https://twitter.com/Jing19794341"
+/>
+
+<IconLink
+  icon={<FaMedium />}
+  text="Medium"
+  link="https://jingmultiplefive.medium.com/"
+/>
+
+<IconLink
+  icon={<FaTelegram />}
+  text="Twitter"
+  link="https://t.me/jing_ha_haha_hahaha"
+/>
+
+<IconLink
+  icon={<FaLinkedinIn />}
+  text="LinkedIn"
+  link="https://www.linkedin.com/in/jing-huang-su-76b525a2/"
+/>
+
+</div>
+```
+
+> Quick Note
+>
+> 1. 在 `gatsby-config.js` 內 plugins 引入可以有兩種寫法，其一為 `["gatsby-plugin-xxx"]` 在來就是 `[{resolve: "gatsby-plugin-xxx"}]`
+
+## Add Mdx files
+
+> TL;DR
+>
+> 1. Install `gatsby-source-filesystem`
+> 2. Add the plugin into `gatsby-config.js` & restart environment
+> 3. create a root folder, called "posts".
+> 4. create a root file, called `gatsby-node.js`.
+> 5. create a `usePosts` hooks to query all posts from './posts' folder.
+
+現在我們已經學會如何用 Mdx 寫的文章了! 接下來我們創建一個 posts 的 folder 在根目錄底下，
+
+## Reference
+
+```
+
+```

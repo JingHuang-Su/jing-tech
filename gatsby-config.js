@@ -13,6 +13,12 @@ module.exports = {
         defaultLayouts: {
           default: require.resolve('./src/components/Layout/index.js'),
         },
+        gatsbyRemarkPlugins: [
+          {
+            resolve: `gatsby-remark-vscode`,
+            options: { theme: 'Dark+ (default dark)' },
+          },
+        ],
       },
     },
     {

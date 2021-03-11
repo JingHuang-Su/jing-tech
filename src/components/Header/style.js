@@ -10,13 +10,14 @@ const Wrapper = styled('header')`
   font-weight: 400;
   font-size: 16px;
   line-height: 1.2;
+  text-align: center;
 `;
 
 const Title = styled('h1')`
   color: #4c4e55;
   line-height: 1.1;
   font-weight: 600;
-  padding: 0.5rem 0;
+  padding: 3rem 0 0.5rem;
   margin: 0;
   font-size: 2.488rem;
 `;
@@ -37,7 +38,7 @@ const Info = styled('div')`
   font-size: 0.9rem;
   display: flex;
   align-items: center;
-  padding-bottom: 20px;
+  padding-bottom: 3rem;
 `;
 
 export { Wrapper, Title, SubTitle, Info };
