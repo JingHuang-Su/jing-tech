@@ -266,17 +266,201 @@ import IconLink from '../components/IconLink';
 >
 > 1. 在 `gatsby-config.js` 內 plugins 引入可以有兩種寫法，其一為 `["gatsby-plugin-xxx"]` 在來就是 `[{resolve: "gatsby-plugin-xxx"}]`
 
-## Add Mdx files
+## Create Posts
 
-> TL;DR
+> Steps
 >
 > 1. Install `gatsby-source-filesystem`
 > 2. Add the plugin into `gatsby-config.js` & restart environment
 > 3. create a root folder, called "posts".
-> 4. create a root file, called `gatsby-node.js`.
-> 5. create a `usePosts` hooks to query all posts from './posts' folder.
+> 4. create a templates`(/src/templates/posts.js)`, that each post could render inside.
+> 5. create a root file, called `gatsby-node.js`.
+> 6. create a `usePosts` hooks to query all posts from './posts' folder.
 
-現在我們已經學會如何用 Mdx 寫的文章了! 接下來我們創建一個 posts 的 folder 在根目錄底下，
+了解 MDX 後，我們就可以建立屬於自己的文章的檔案，將文章都放到 `posts` 這個檔案，而不是放在 `src/pages/`，而為了做到這件事情我們必須使用 `gatsby-source-filesystem`
+
+```shell
+yarn add gatsby-source-filesystem
+```
+
+再來將 `gatsby-source-filesystem` 加入到 `gatsby-config.js` 的 plugins 中
+
+```js{7-14}
+module.exports = {
+  siteMetadata: {
+    /** ... */
+  },
+  plugins: [
+    /** ... */
+    {
+      resolve: 'gatsby-source-filesystem',
+      options: {
+        name: "posts",
+        path: "posts"
+      },
+    },
+  ],
+};
+```
+
+建立 `posts` 在根目錄，並且建立第一篇文章 `000-hello-world/hello-world.mdx`
+
+我們可以建立 frontmatter 在最上方，裡面的內容是提供給 graphql 做 query 時額外的資訊
+
+```md
+---
+title: Hello
+slug: hello
+author: JingHuang-Su
+---
+
+# Hello World
+```
+
+再來就是再 src 底下建立 `templates`，建立 `posts.js` 做為所有 posts 的模板
+
+```js
+import React from 'react';
+import { Link, graphql } from 'gatsby';
+import { MDXRenderer } from 'gatsby-plugin-mdx';
+import Layout from '../components/Layout';
+import Header from '../components/Header';
+import { Article } from './style';
+
+export const query = graphql`
+  query($slug: String!) {
+    mdx(frontmatter: { slug: { eq: $slug } }) {
+      frontmatter {
+        title
+        author
+      }
+      body
+    }
+  }
+`;
+
+const Post = ({ data: { mdx: post } }) => {
+  return (
+    <Layout>
+      <Header
+        title={post.frontmatter.title}
+        info={`Posted by ${post.frontmatter.author}`}
+      />
+      <Article>
+        <MDXRenderer>{post.body}</MDXRenderer>
+      </Article>
+      <Link to="/">&larr; 回到上一頁</Link>
+    </Layout>
+  );
+};
+
+export default Post;
+```
+
+再來就是用 gatsby 強大的 API，可以讓我們建立動態的頁面，可以讓我們進行 routing
+
+```js
+const path = require('path');
+
+exports.createPages = async ({ actions, graphql, reporter }) => {
+  const result = await graphql(`
+    query {
+      allMdx {
+        nodes {
+          frontmatter {
+            slug
+          }
+        }
+      }
+    }
+  `);
+
+  if (result.errors) {
+    reporter.panic('failed to create posts', result.errors);
+  }
+
+  const posts = result.data.allMdx.nodes;
+
+  const pageTemplates = path.resolve(`./src/templates/post.js`);
+
+  posts.forEach((post) => {
+    actions.createPage({
+      path: `/${post.frontmatter.slug}`,
+      component: pageTemplates,
+      context: {
+        // additional data can be passed via context
+        slug: post.frontmatter.slug,
+      },
+    });
+  });
+};
+```
+
+最後在 `/src/page/index.js` 將所有 posts 列出來，而我們會用到 `usePosts` 幫我們先 query 資料
+
+```js
+// usePosts
+import { graphql, useStaticQuery } from 'gatsby';
+
+const usePosts = () => {
+  const data = useStaticQuery(graphql`
+    query {
+      allMdx {
+        nodes {
+          frontmatter {
+            title
+            author
+            slug
+          }
+          excerpt
+        }
+      }
+    }
+  `);
+
+  return data.allMdx.nodes.map((post) => ({
+    title: post.frontmatter.title,
+    author: post.frontmatter.author,
+    slug: post.frontmatter.slug,
+    excerpt: post.excerpt,
+  }));
+};
+
+export default usePosts;
+```
+
+```js
+// index.js
+
+import React from 'react';
+import usePosts from '../hooks/usePosts';
+import Layout from '../components/Layout';
+import { Link } from 'gatsby';
+
+const App = () => {
+  const posts = usePosts();
+  return (
+    <Layout>
+      <h1>Hello World!</h1>
+      {posts.map((post) => (
+        <>
+          <pre>
+            <code>{JSON.stringify(post, null, 2)}</code>
+          </pre>
+          <Link to={post.slug}>{post.slug}</Link>
+        </>
+      ))}
+      <Link to="/about">Go to About</Link>
+    </Layout>
+  );
+};
+
+export default App;
+```
+
+> Quick Note
+>
+> 1. Page Query 是只有在 Page Component 才會有用的，原因是當 Gatsby 在渲染頁面時，就會先將該頁的 Page Query 資訊注入到 `props.data` 中。
 
 ## Reference
 
